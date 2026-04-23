@@ -275,7 +275,7 @@
             const div = document.getElementById('histEvo');
             div.innerHTML = '';
             pacientes[pIndex].evolucoes.forEach(e => {
-                div.innerHTML += <div class="evo-item"><small>${e.data}</small><p>${e.texto}</p></div>;
+                div.innerHTML += `<div class="evo-item"><small>${e.data}</small><p>${e.texto}</p></div>`;
             });
         }
 
@@ -316,8 +316,8 @@
 
         function exportarTexto() {
             const p = pacientes[pIndex];
-            let t = RELATÓRIO - MARCO KIDS\nPaciente: ${p.nome}\n;
-            p.evolucoes.forEach(e => t += [${e.data}] ${e.texto}\n);
+            let t = `RELATÓRIO - MARCO KIDS\nPaciente: ${p.nome}\n`;
+            p.evolucoes.forEach(e => t += `[${e.data}] ${e.texto}\n`);
             navigator.clipboard.writeText(t).then(() => {
                 const toast = document.getElementById('toast');
                 toast.style.display = 'block';
@@ -327,7 +327,7 @@
 
         function abrirConfirmacao(idx) {
             pIndex = idx;
-            document.getElementById('txtConfirm').innerText = Apagar registro de ${pacientes[idx].nome}?;
+            document.getElementById('txtConfirm').innerText = `Apagar registro de ${pacientes[idx].nome}?`;
             document.getElementById('modalConfirm').style.display = 'block';
             document.getElementById('btnConfirmarDelete').onclick = function() {
                 pacientes.splice(pIndex, 1);
