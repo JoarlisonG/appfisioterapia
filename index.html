@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marco Kids Pro - Gestão</title>
+    <title>Marco Kids - Gestão</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
@@ -38,6 +38,8 @@
             z-index: 1000;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+
+        header h1 { margin: 0; font-size: 1.5rem; }
 
         .search-box {
             background: rgba(255, 255, 255, 0.25);
@@ -126,7 +128,7 @@
 <body>
 
     <header>
-        <h1><i class="fas fa-hand-holding-medical"></i> FisioApp</h1>
+        <h1><i class="fas fa-child"></i> Marco Kids</h1>
         <div class="search-box">
             <i class="fas fa-search"></i>
             <input type="text" id="inputBusca" placeholder="Buscar paciente..." onkeyup="filtrarPacientes()">
@@ -134,15 +136,15 @@
     </header>
 
     <main class="container">
-        <button onclick="toggleForm()" class="btn-toggle-form"><i class="fas fa-plus-circle"></i> Novo Paciente</button>
+        <button onclick="toggleForm()" class="btn-toggle-form"><i class="fas fa-plus-circle"></i> Novo Cadastro</button>
         
         <div id="formCadastro" class="hidden">
-            <input type="text" id="nome" placeholder="Nome Completo">
+            <input type="text" id="nome" placeholder="Nome da Criança">
             <div class="form-row">
                 <input type="number" id="idade" placeholder="Idade">
-                <input type="text" id="cid" placeholder="CID">
+                <input type="text" id="cid" placeholder="CID (Opcional)">
             </div>
-            <button onclick="salvarPaciente()" class="btn-save-master">Salvar no Banco</button>
+            <button onclick="salvarPaciente()" class="btn-save-master">Finalizar Cadastro</button>
         </div>
 
         <div id="listaPacientes"></div>
@@ -164,16 +166,16 @@
                 <button onclick="exportarTexto()" style="background:#eee; border:none; padding:8px; border-radius:5px; margin-bottom:10px; font-size:0.8rem; cursor:pointer;">
                     <i class="fas fa-copy"></i> Copiar Relatório
                 </button>
-                <textarea id="txtEvo" rows="3" placeholder="O que foi feito hoje?"></textarea>
-                <button onclick="addEvo()" class="btn-save-master">Salvar Evolução</button>
+                <textarea id="txtEvo" rows="3" placeholder="Relato da sessão..."></textarea>
+                <button onclick="addEvo()" class="btn-save-master">Salvar Registro</button>
                 <div id="histEvo" style="margin-top:15px;"></div>
             </div>
 
             <div id="tabEx" class="hidden">
                 <div style="background: #f0edff; padding: 10px; border-radius: 10px; margin-bottom: 15px;">
-                    <input type="text" id="nomeEx" placeholder="Nome do Exercício (ex: Agachamento)">
-                    <input type="text" id="obsEx" placeholder="Séries/Repetições (ex: 3x12)">
-                    <button onclick="addEx()" class="btn-add-ex">Adicionar Exercício</button>
+                    <input type="text" id="nomeEx" placeholder="Atividade ou Exercício">
+                    <input type="text" id="obsEx" placeholder="Obs/Séries">
+                    <button onclick="addEx()" class="btn-add-ex">Salvar Atividade</button>
                 </div>
                 <div id="listaEx"></div>
             </div>
@@ -210,7 +212,6 @@
             const i = document.getElementById('idade').value;
             const c = document.getElementById('cid').value || 'N/A';
             if(!n) return;
-            // Note que adicionei o array 'exercicios' no objeto
             pacientes.push({ nome: n, idade: i, cid: c, evolucoes: [], exercicios: [] });
             salvarLocalStorage();
             document.getElementById('nome').value = '';
@@ -260,7 +261,6 @@
             }
         }
 
-        // Funções de Evolução
         function addEvo() {
             const txt = document.getElementById('txtEvo').value;
             if(!txt) return;
@@ -275,19 +275,16 @@
             const div = document.getElementById('histEvo');
             div.innerHTML = '';
             pacientes[pIndex].evolucoes.forEach(e => {
-                div.innerHTML += `<div class="evo-item"><small>${e.data}</small><p>${e.texto}</p></div>`;
+                div.innerHTML += <div class="evo-item"><small>${e.data}</small><p>${e.texto}</p></div>;
             });
         }
 
-        // Funções de Exercícios
         function addEx() {
             const nome = document.getElementById('nomeEx').value;
             const obs = document.getElementById('obsEx').value;
             if(!nome) return;
-            
             if(!pacientes[pIndex].exercicios) pacientes[pIndex].exercicios = [];
             pacientes[pIndex].exercicios.push({ nome, obs });
-            
             document.getElementById('nomeEx').value = '';
             document.getElementById('obsEx').value = '';
             salvarLocalStorage();
@@ -317,11 +314,10 @@
             renderEx();
         }
 
-        // Auxiliares
         function exportarTexto() {
             const p = pacientes[pIndex];
-            let t = `RELATÓRIO: ${p.nome}\n`;
-            p.evolucoes.forEach(e => t += `[${e.data}] ${e.texto}\n`);
+            let t = RELATÓRIO - MARCO KIDS\nPaciente: ${p.nome}\n;
+            p.evolucoes.forEach(e => t += [${e.data}] ${e.texto}\n);
             navigator.clipboard.writeText(t).then(() => {
                 const toast = document.getElementById('toast');
                 toast.style.display = 'block';
@@ -331,7 +327,7 @@
 
         function abrirConfirmacao(idx) {
             pIndex = idx;
-            document.getElementById('txtConfirm').innerText = `Apagar ${pacientes[idx].nome}?`;
+            document.getElementById('txtConfirm').innerText = Apagar registro de ${pacientes[idx].nome}?;
             document.getElementById('modalConfirm').style.display = 'block';
             document.getElementById('btnConfirmarDelete').onclick = function() {
                 pacientes.splice(pIndex, 1);
