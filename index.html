@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FisioApp Pro - Gestão</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary-green: #00b894;
+            --secondary-blue: #0984e3;
+            --bg-light: #f0f2f5;
+            --card-white: #ffffff;
+            --text-dark: #2d3436;
+            --text-gray: #636e72;
+            --danger-red: #ff7675;
+            --purple: #6c5ce7;
+            --shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            color: var(--text-dark);
+            padding-bottom: 30px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary-green), var(--secondary-blue));
+            color: white;
+            padding: 20px 15px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .search-box {
+            background: rgba(255, 255, 255, 0.25);
+            padding: 10px 15px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .search-box input {
+            background: none; border: none; color: white;
+            margin-left: 10px; width: 100%; outline: none; font-size: 1rem;
+        }
+
+        .container { padding: 15px; max-width: 650px; margin: auto; }
+
+        /* Forms */
+        .btn-toggle-form {
+            width: 100%; padding: 14px; background: var(--card-white);
+            border: 2px dashed var(--primary-green); border-radius: 12px;
+            color: var(--primary-green); font-weight: bold; cursor: pointer; margin-bottom: 20px;
+        }
+
+        #formCadastro { background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: var(--shadow); }
+        .hidden { display: none !important; }
+        .form-row { display: flex; gap: 10px; }
+
+        input, textarea {
+            width: 100%; padding: 12px; margin: 6px 0;
+            border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px;
+        }
+
+        .btn-save-master {
+            background: var(--primary-green); color: white; border: none;
+            padding: 14px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer;
+        }
+
+        /* Card Paciente */
+        .paciente-card {
+            background: var(--card-white); padding: 15px; border-radius: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: var(--shadow); margin-bottom: 12px;
+        }
+
+        .paciente-info { flex: 1; min-width: 0; cursor: pointer; }
+        .paciente-info h4 { margin: 0; color: var(--secondary-blue); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        /* Modais e Abas */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 2000; backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background: white; margin: 5% auto; width: 92%; max-width: 450px;
+            border-radius: 20px; padding: 20px; position: relative; animation: fadeIn 0.3s ease;
+        }
+
+        .tabs { display: flex; border-bottom: 2px solid #eee; margin-bottom: 15px; }
+        .tab-btn { 
+            flex: 1; padding: 10px; border: none; background: none; 
+            font-weight: bold; color: var(--text-gray); cursor: pointer; 
+        }
+        .tab-btn.active { color: var(--primary-green); border-bottom: 3px solid var(--primary-green); }
+
+        /* Estilo Exercícios */
+        .ex-item {
+            background: #f8f9fa; border-left: 4px solid var(--purple);
+            padding: 10px; margin-bottom: 8px; border-radius: 4px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .btn-add-ex { background: var(--purple); color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; font-weight: bold; margin-bottom: 15px; }
+
+        /* Confirmação e Toasts */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #2d3436; color: white; padding: 10px 20px; border-radius: 20px;
+            font-size: 0.9rem; display: none; z-index: 3000;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1><i class="fas fa-hand-holding-medical"></i> FisioApp</h1>
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="inputBusca" placeholder="Buscar paciente..." onkeyup="filtrarPacientes()">
+        </div>
+    </header>
+
+    <main class="container">
+        <button onclick="toggleForm()" class="btn-toggle-form"><i class="fas fa-plus-circle"></i> Novo Paciente</button>
+        
+        <div id="formCadastro" class="hidden">
+            <input type="text" id="nome" placeholder="Nome Completo">
+            <div class="form-row">
+                <input type="number" id="idade" placeholder="Idade">
+                <input type="text" id="cid" placeholder="CID">
+            </div>
+            <button onclick="salvarPaciente()" class="btn-save-master">Salvar no Banco</button>
+        </div>
+
+        <div id="listaPacientes"></div>
+    </main>
+
+    <div id="modalEvolucao" class="modal">
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h2 id="mNome" style="margin:0; color:var(--secondary-blue); font-size: 1.2rem;"></h2>
+                <span onclick="fecharModal('modalEvolucao')" style="cursor:pointer; font-size: 2rem;">&times;</span>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('evo')">Evoluções</button>
+                <button class="tab-btn" onclick="switchTab('ex')">Exercícios</button>
+            </div>
+
+            <div id="tabEvo">
+                <button onclick="exportarTexto()" style="background:#eee; border:none; padding:8px; border-radius:5px; margin-bottom:10px; font-size:0.8rem; cursor:pointer;">
+                    <i class="fas fa-copy"></i> Copiar Relatório
+                </button>
+                <textarea id="txtEvo" rows="3" placeholder="O que foi feito hoje?"></textarea>
+                <button onclick="addEvo()" class="btn-save-master">Salvar Evolução</button>
+                <div id="histEvo" style="margin-top:15px;"></div>
+            </div>
+
+            <div id="tabEx" class="hidden">
+                <div style="background: #f0edff; padding: 10px; border-radius: 10px; margin-bottom: 15px;">
+                    <input type="text" id="nomeEx" placeholder="Nome do Exercício (ex: Agachamento)">
+                    <input type="text" id="obsEx" placeholder="Séries/Repetições (ex: 3x12)">
+                    <button onclick="addEx()" class="btn-add-ex">Adicionar Exercício</button>
+                </div>
+                <div id="listaEx"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalConfirm" class="modal">
+        <div class="modal-content" style="text-align: center; margin-top: 30%;">
+            <i class="fas fa-trash-alt" style="color:var(--danger-red); font-size: 2.5rem;"></i>
+            <h3>Apagar Registro?</h3>
+            <p id="txtConfirm" style="color: var(--text-gray);"></p>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button onclick="fecharModal('modalConfirm')" style="flex:1; padding:12px; border-radius:8px; border:1px solid #ddd;">Voltar</button>
+                <button id="btnConfirmarDelete" style="flex:1; padding:12px; border-radius:8px; border:none; background:var(--danger-red); color:white; font-weight:bold;">Apagar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Copiado com sucesso!</div>
+
+    <script>
+        let pacientes = JSON.parse(localStorage.getItem('fisio_v4')) || [];
+        let pIndex = null;
+
+        function salvarLocalStorage() {
+            localStorage.setItem('fisio_v4', JSON.stringify(pacientes));
+            render();
+        }
+
+        function toggleForm() { document.getElementById('formCadastro').classList.toggle('hidden'); }
+
+        function salvarPaciente() {
+            const n = document.getElementById('nome').value;
+            const i = document.getElementById('idade').value;
+            const c = document.getElementById('cid').value || 'N/A';
+            if(!n) return;
+            // Note que adicionei o array 'exercicios' no objeto
+            pacientes.push({ nome: n, idade: i, cid: c, evolucoes: [], exercicios: [] });
+            salvarLocalStorage();
+            document.getElementById('nome').value = '';
+            toggleForm();
+        }
+
+        function render(filtro = "") {
+            const lista = document.getElementById('listaPacientes');
+            lista.innerHTML = '';
+            pacientes.forEach((p, idx) => {
+                if(p.nome.toLowerCase().includes(filtro.toLowerCase())) {
+                    lista.innerHTML += `
+                        <div class="paciente-card">
+                            <div class="paciente-info" onclick="abrirPerfil(${idx})">
+                                <h4>${p.nome}</h4>
+                                <small>${p.idade} anos | CID: ${p.cid}</small>
+                            </div>
+                            <button onclick="abrirConfirmacao(${idx})" style="border:none; background:none; color:#ced4da;"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        function abrirPerfil(idx) {
+            pIndex = idx;
+            document.getElementById('mNome').innerText = pacientes[idx].nome;
+            document.getElementById('modalEvolucao').style.display = 'block';
+            switchTab('evo');
+            renderEvo();
+            renderEx();
+        }
+
+        function switchTab(tipo) {
+            const btnEvo = document.querySelectorAll('.tab-btn')[0];
+            const btnEx = document.querySelectorAll('.tab-btn')[1];
+            if(tipo === 'evo') {
+                document.getElementById('tabEvo').classList.remove('hidden');
+                document.getElementById('tabEx').classList.add('hidden');
+                btnEvo.classList.add('active');
+                btnEx.classList.remove('active');
+            } else {
+                document.getElementById('tabEvo').classList.add('hidden');
+                document.getElementById('tabEx').classList.remove('hidden');
+                btnEvo.classList.remove('active');
+                btnEx.classList.add('active');
+            }
+        }
+
+        // Funções de Evolução
+        function addEvo() {
+            const txt = document.getElementById('txtEvo').value;
+            if(!txt) return;
+            const data = new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+            pacientes[pIndex].evolucoes.unshift({ data, texto: txt });
+            document.getElementById('txtEvo').value = '';
+            salvarLocalStorage();
+            renderEvo();
+        }
+
+        function renderEvo() {
+            const div = document.getElementById('histEvo');
+            div.innerHTML = '';
+            pacientes[pIndex].evolucoes.forEach(e => {
+                div.innerHTML += `<div class="evo-item"><small>${e.data}</small><p>${e.texto}</p></div>`;
+            });
+        }
+
+        // Funções de Exercícios
+        function addEx() {
+            const nome = document.getElementById('nomeEx').value;
+            const obs = document.getElementById('obsEx').value;
+            if(!nome) return;
+            
+            if(!pacientes[pIndex].exercicios) pacientes[pIndex].exercicios = [];
+            pacientes[pIndex].exercicios.push({ nome, obs });
+            
+            document.getElementById('nomeEx').value = '';
+            document.getElementById('obsEx').value = '';
+            salvarLocalStorage();
+            renderEx();
+        }
+
+        function renderEx() {
+            const div = document.getElementById('listaEx');
+            div.innerHTML = '';
+            const lista = pacientes[pIndex].exercicios || [];
+            lista.forEach((ex, i) => {
+                div.innerHTML += `
+                    <div class="ex-item">
+                        <div>
+                            <strong>${ex.nome}</strong><br>
+                            <small style="color:var(--purple)">${ex.obs}</small>
+                        </div>
+                        <button onclick="removerEx(${i})" style="border:none; background:none; color:var(--danger-red)"><i class="fas fa-times"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function removerEx(i) {
+            pacientes[pIndex].exercicios.splice(i, 1);
+            salvarLocalStorage();
+            renderEx();
+        }
+
+        // Auxiliares
+        function exportarTexto() {
+            const p = pacientes[pIndex];
+            let t = `RELATÓRIO: ${p.nome}\n`;
+            p.evolucoes.forEach(e => t += `[${e.data}] ${e.texto}\n`);
+            navigator.clipboard.writeText(t).then(() => {
+                const toast = document.getElementById('toast');
+                toast.style.display = 'block';
+                setTimeout(() => toast.style.display = 'none', 2000);
+            });
+        }
+
+        function abrirConfirmacao(idx) {
+            pIndex = idx;
+            document.getElementById('txtConfirm').innerText = `Apagar ${pacientes[idx].nome}?`;
+            document.getElementById('modalConfirm').style.display = 'block';
+            document.getElementById('btnConfirmarDelete').onclick = function() {
+                pacientes.splice(pIndex, 1);
+                salvarLocalStorage();
+                fecharModal('modalConfirm');
+            }
+        }
+
+        function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
+        function filtrarPacientes() { render(document.getElementById('inputBusca').value); }
+
+        render();
+    </script>
+</body>
+</html>
